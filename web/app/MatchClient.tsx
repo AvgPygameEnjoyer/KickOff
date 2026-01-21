@@ -13,14 +13,16 @@ const LEAGUE_PRIORITY: Record<string, number> = {
     'Europa League': 2,
     'UEFA Europa League': 2,
     'Premier League': 3,
+    'English Premier League': 3,
     'La Liga': 4,
-    'Bundesliga': 5,
-    'Ligue 1': 6,
-    'League One': 6,
+    'Spanish League': 4,
+    'Ligue 1': 5,
+    'League One': 5,
+    'French League': 5,
+    'Bundesliga': 6,
+    'German League': 6,
     'Serie A': 7,
     'Italian League': 7,
-    'Portuguese League': 8,
-    'Liga Portugal': 8,
 };
 
 function getLeaguePriority(leagueName: string): number {
@@ -93,8 +95,8 @@ export default function MatchClient({ initialMatches }: { initialMatches: any[] 
                     <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className={`w-full px-6 py-4 rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all duration-500 border-2 flex items-center justify-between backdrop-blur-xl ${selectedLeagues.length > 0 || isDropdownOpen
-                                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.15)]'
-                                : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                            ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.15)]'
+                            : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700'
                             }`}
                     >
                         <span className="flex items-center gap-3">
@@ -118,8 +120,8 @@ export default function MatchClient({ initialMatches }: { initialMatches: any[] 
 
                     {/* Luxury Dropdown Menu */}
                     <div className={`absolute top-full left-0 right-0 mt-3 p-2 bg-[#0a0f1a]/95 backdrop-blur-2xl border-2 border-slate-800 rounded-2xl shadow-2xl transition-all duration-500 origin-top ${isDropdownOpen
-                            ? 'opacity-100 scale-100 pointer-events-auto translate-y-0'
-                            : 'opacity-0 scale-95 pointer-events-none -translate-y-4'
+                        ? 'opacity-100 scale-100 pointer-events-auto translate-y-0'
+                        : 'opacity-0 scale-95 pointer-events-none -translate-y-4'
                         }`}>
                         <button
                             onClick={() => { setSelectedLeagues([]); setIsDropdownOpen(false); }}
@@ -135,8 +137,8 @@ export default function MatchClient({ initialMatches }: { initialMatches: any[] 
                                     key={league}
                                     onClick={() => toggleLeague(league)}
                                     className={`w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all mb-1 flex items-center justify-between group/item ${selectedLeagues.includes(league)
-                                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                            : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
                                         }`}
                                 >
                                     <span className="truncate">{league}</span>

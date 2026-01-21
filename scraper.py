@@ -108,5 +108,10 @@ def main():
     if len(all_matches) > 10:
         print(f"... and {len(all_matches) - 10} more.")
 
+    # Save to Database
+    print("\nSaving to database...")
+    from database import upsert_matches
+    upsert_matches(all_matches)
+
 if __name__ == "__main__":
     main()

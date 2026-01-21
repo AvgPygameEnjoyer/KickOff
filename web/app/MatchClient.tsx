@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 
 function formatDate(dateString: string) {
     const options: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' };
@@ -34,6 +34,19 @@ function getLeaguePriority(leagueName: string): number {
 
 export default function MatchClient({ initialMatches }: { initialMatches: any[] }) {
     const [selectedLeagues, setSelectedLeagues] = useState<string[]>([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const sortedAndFilteredMatches = useMemo(() => {
         let matches = [...initialMatches];
@@ -66,7 +79,7 @@ export default function MatchClient({ initialMatches }: { initialMatches: any[] 
     };
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto px-4 py-8 relative">
             <header className="mb-12 text-center">
                 <h1 className="text-7xl font-black tracking-tighter bg-gradient-to-b from-white to-slate-500 bg-clip-text text-transparent italic transform -skew-x-12">
                     KICKOFF
@@ -74,37 +87,79 @@ export default function MatchClient({ initialMatches }: { initialMatches: any[] 
                 <p className="text-slate-500 font-bold uppercase tracking-[0.4em] text-[10px] mt-2">Elite Priority Feed</p>
             </header>
 
-            <nav className="mb-12">
-                <div className="flex flex-wrap justify-center gap-2">
+            {/* Dropdown Filter */}
+            <div className="mb-12 flex justify-center sticky top-4 z-50 px-4" ref={dropdownRef}>
+                <div className="relative w-full max-w-xs group">
                     <button
-                        onClick={() => setSelectedLeagues([])}
-                        className={`px-4 py-2 rounded-lg font-bold text-[10px] tracking-widest uppercase transition-all duration-300 border ${selectedLeagues.length === 0
-                                ? 'bg-white text-slate-950 border-white'
-                                : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className={`w-full px-6 py-4 rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all duration-500 border-2 flex items-center justify-between backdrop-blur-xl ${selectedLeagues.length > 0 || isDropdownOpen
+                                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.15)]'
+                                : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700'
                             }`}
                     >
-                        All Matches
-                    </button>
-                    <div className="w-px h-8 bg-slate-800 self-center mx-2 hidden sm:block"></div>
-                    {availableLeagues.map((league) => (
-                        <button
-                            key={league}
-                            onClick={() => toggleLeague(league)}
-                            className={`px-4 py-2 rounded-lg font-bold text-[10px] tracking-widest uppercase transition-all duration-300 border ${selectedLeagues.includes(league)
-                                    ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
-                                    : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300'
-                                }`}
+                        <span className="flex items-center gap-3">
+                            <span className="relative flex h-2 w-2">
+                                {selectedLeagues.length > 0 && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
+                                <span className={`relative inline-flex rounded-full h-2 w-2 ${selectedLeagues.length > 0 ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
+                            </span>
+                            {selectedLeagues.length === 0
+                                ? 'All Leagues'
+                                : `${selectedLeagues.length} Selected`}
+                        </span>
+                        <svg
+                            className={`w-4 h-4 transition-transform duration-500 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
                         >
-                            {league.replace('Premier League', 'PREM').replace('UEFA ', '').slice(0, 15)}
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    {/* Luxury Dropdown Menu */}
+                    <div className={`absolute top-full left-0 right-0 mt-3 p-2 bg-[#0a0f1a]/95 backdrop-blur-2xl border-2 border-slate-800 rounded-2xl shadow-2xl transition-all duration-500 origin-top ${isDropdownOpen
+                            ? 'opacity-100 scale-100 pointer-events-auto translate-y-0'
+                            : 'opacity-0 scale-95 pointer-events-none -translate-y-4'
+                        }`}>
+                        <button
+                            onClick={() => { setSelectedLeagues([]); setIsDropdownOpen(false); }}
+                            className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-800/50 hover:text-white transition-all mb-1 flex items-center justify-between"
+                        >
+                            Show All Matches
+                            {selectedLeagues.length === 0 && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
                         </button>
-                    ))}
+                        <div className="h-px bg-slate-800/50 mx-2 my-2"></div>
+                        <div className="max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                            {availableLeagues.map((league) => (
+                                <button
+                                    key={league}
+                                    onClick={() => toggleLeague(league)}
+                                    className={`w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all mb-1 flex items-center justify-between group/item ${selectedLeagues.includes(league)
+                                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                            : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                                        }`}
+                                >
+                                    <span className="truncate">{league}</span>
+                                    {selectedLeagues.includes(league) ? (
+                                        <div className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center">
+                                            <svg className="w-3 h-3 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                    ) : (
+                                        <span className="text-[8px] opacity-0 group-hover/item:opacity-40 font-mono">#{getLeaguePriority(league)}</span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-            </nav>
+            </div>
 
             <main className="space-y-6">
                 {sortedAndFilteredMatches.length === 0 ? (
-                    <div className="text-center py-20 border-2 border-dashed border-slate-800 rounded-3xl">
-                        <p className="text-slate-500 font-medium">No matches found for the selected filters.</p>
+                    <div className="text-center py-24 bg-slate-900/20 border-2 border-dashed border-slate-800/50 rounded-[2rem]">
+                        <p className="text-slate-600 font-bold uppercase tracking-widest text-xs">Zero Matches Found</p>
                     </div>
                 ) : (
                     sortedAndFilteredMatches.map((match: any) => (

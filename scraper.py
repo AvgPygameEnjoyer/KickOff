@@ -2,6 +2,7 @@ from playwright.sync_api import sync_playwright
 import datetime
 import json
 import time
+from database import upsert_matches
 
 def scrape_matches(date_obj):
     """
@@ -110,7 +111,6 @@ def main():
 
     # Save to Database
     print("\nSaving to database...")
-    from database import upsert_matches
     upsert_matches(all_matches)
 
 if __name__ == "__main__":

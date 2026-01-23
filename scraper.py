@@ -2,7 +2,7 @@ from playwright.sync_api import sync_playwright
 import datetime
 import json
 import time
-from database import upsert_matches
+from database import upsert_matches, check_if_date_exists, delete_old_matches
 
 def scrape_matches(date_obj):
     """
@@ -84,12 +84,20 @@ def scrape_matches(date_obj):
 
 def main():
     today = datetime.date.today()
+    
+    # Remove matches older than today to keep the database current
+    delete_old_matches(today.strftime("%Y%m%d"))
+    
     tomorrow = today + datetime.timedelta(days=1)
     
-    dates_to_scrape = [today, tomorrow]
+    dates_to_scrape = []
+    for d in [today, tomorrow]:
+        if not check_if_date_exists(d.strftime("%Y%m%d")):
+            dates_to_scrape.append(d)
+        else:
+            print(f"Skipping {d}: Data already exists in DB.")
+
     all_matches = []
-    
-    print(f"Starting scrape for {today} and {tomorrow}")
     
     for d in dates_to_scrape:
         print(f"Scraping {d}...")

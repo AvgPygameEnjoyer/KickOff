@@ -42,6 +42,34 @@ def upsert_matches(matches_data):
     except Exception as e:
         print(f"Error saving to Database: {e}")
 
+def check_if_date_exists(date_str):
+    """
+    Checks if matches for a given date already exist in the database.
+    """
+    if not supabase:
+        return False
+
+    try:
+        response = supabase.table('matches').select('date').eq('date', date_str).limit(1).execute()
+        return len(response.data) > 0
+    except Exception as e:
+        print(f"Error checking existence for {date_str}: {e}")
+        return False
+
+def delete_old_matches(date_str):
+    """
+    Deletes matches with a date strictly less than the provided date_str.
+    """
+    if not supabase:
+        return
+
+    try:
+        # Delete matches where date < date_str (e.g., remove yesterday's matches)
+        supabase.table('matches').delete().lt('date', date_str).execute()
+        print(f"Deleted matches older than {date_str}.")
+    except Exception as e:
+        print(f"Error deleting old matches: {e}")
+
 # Main block for testing connection
 if __name__ == "__main__":
     print("Testing Supabase connection...")
